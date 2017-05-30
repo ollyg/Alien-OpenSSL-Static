@@ -1,51 +1,12 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
-use IPC::Cmd qw/can_run/;
-
 use Alien::Base::ModuleBuild '0.025';
-
-my $addcc = "";
-$addcc = "CC=cc " if ( (!can_run('gcc')) && can_run('cc') );
-
-my $class;
-if ($^O eq 'MSWin32') {
-  print "Enabling Windows hacks...\n";
-  $class = Alien::Base::ModuleBuild->subclass( class => 'Alien::OpenSSL::Static::Builder',
-                                               code => <<'EOC' );
-
-use Carp;
-use File::Spec;
-use Env qw(@PATH);
-
-# Look for MinGW
-for my $INC (grep !ref, @INC) {
-  my $dir = File::Spec->rel2abs(File::Spec->catdir($INC, qw(auto MinGw bin)));
-  push @PATH, $dir if -d $dir;
-}
-
-sub alien_extract_archive {
-  my ($self, $archive) = @_;
-
-  print "Extracting archive '$archive'...\n";
-  print "tar may report some errors now, they are harmless and can be ignored!\n";
-  $self->alien_do_system(['tar', '-xzf', $archive]);
-  my (undef, undef, $dir) = File::Spec->splitpath($archive);
-  $dir =~ s/\.tar\.gz$//;
-  -d $dir or croak "Archive extraction failed";
-  print "Done\n";
-  return $dir
-}
-EOC
-
-}
-else {
-  $class = 'Alien::Base::ModuleBuild';
-}
 
 my $minver = '1.1.0f';
 
-my $builder = $class->new (
-    sign => 1,
+my $builder = Alien::Base::ModuleBuild->new (
     module_name => 'Alien::OpenSSL::Static',
     license => 'perl',
     configure_requires => {
@@ -57,7 +18,6 @@ my $builder = $class->new (
         'perl' => '5.8.1',
         'Alien::Base' => '0.025',
     },
-    dist_author => 'Johanna Amann <johanna@icir.org>',
     alien_name => 'openssl',
     alien_repository => {
         protocol => 'local',
@@ -66,14 +26,10 @@ my $builder = $class->new (
     },
     alien_version_check => '%{pkg_config} --atleast-version '
       . $minver .' %n && %{pkg_config} --modversion %n',
-    alien_msys => 1,
     alien_stage_install => 0,
     alien_build_commands => [
-        $addcc.'sh config no-shared --prefix=%s',
-        $addcc.'make',
-    ],
-    alien_test_commands => [
-        $addcc.'make test',
+        'sh config no-shared --prefix=%s',
+        'make',
     ],
     alien_install_commands => [
         'make install_sw',
