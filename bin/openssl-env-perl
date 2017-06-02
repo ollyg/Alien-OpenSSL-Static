@@ -25,11 +25,11 @@ if ($key eq 'KEYS') {
 }
 else {
   exit 1 if !exists $stash{$key};
-  if ($key m/PATH/) {
-    print join ':', $stash{$key}, $ENV{$key};
+  if ($key =~ m/PATH/) {
+    print join ':', grep {defined} ($stash{$key}, $ENV{$key});
   }
   else {
-    print join ' ', $stash{$key}, $ENV{$key};
+    print join ' ', grep {defined} ($stash{$key}, $ENV{$key});
   }
   exit 0;
 }
