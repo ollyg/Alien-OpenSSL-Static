@@ -42,7 +42,8 @@ my $builder = Alien::Base::ModuleBuild->new (
         },
     },
     script_files => [
-      'bin/openssl-env'
+      'bin/openssl-env-bash'
+      'bin/openssl-env-perl'
     ],
 );
 
