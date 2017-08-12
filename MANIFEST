@@ -1,4 +1,5 @@
-bin/openssl-env
+bin/openssl-env-bash
+bin/openssl-env-perl
 Build.PL
 Changes
 lib/Alien/OpenSSL/Static.pm
